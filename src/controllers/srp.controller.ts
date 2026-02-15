@@ -7,6 +7,7 @@ import {
   getActiveSrpRecord,
   getSrpRecordById,
 } from '../services/srp.service';
+import { getIO } from '../socket';
 
 /**
  * POST /api/srp — Create a new SRP record (with cascade)
@@ -22,6 +23,10 @@ export const createSrp = async (req: Request, res: Response) => {
       { price, reference, startDate, endDate },
       adminId
     );
+
+    // Broadcast to all connected clients — only after transaction commits
+    getIO().emit('srp:new', record);
+    logger.info('Broadcast srp:new event', { id: record.id });
 
     sendSuccess(res, record, 201);
   } catch (error) {
