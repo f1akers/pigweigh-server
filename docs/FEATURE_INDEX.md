@@ -6,7 +6,7 @@
 
 ## Overview
 
-**PigWeigh Server** is a RESTful Express.js API backend for the PigWeigh application (including the Flutter mobile app). It provides pig management, weighing, and supporting services. The API is designed with a consistent `{ data, errors }` envelope for all responses.
+**PigWeigh Server** is a RESTful Express.js API backend for the PigWeigh application (Flutter mobile app). The app weighs pigs via an on-device ML model; the server's responsibility is managing the **official SRP (Suggested Retail Price)** from the Philippine DA, **real-time publication** of new prices via WebSocket, and **price history management**. The API is designed with a consistent `{ data, errors }` envelope for all responses.
 
 ### Technology Stack
 
@@ -18,6 +18,9 @@
 | **Prisma**     | ^7.2.0  | ORM / Database client  |
 | **PostgreSQL** | -       | Primary database       |
 | **Zod**        | ^4.3.5  | Request validation     |
+| **Socket.IO**  | -       | Real-time WebSocket    |
+| **bcrypt**     | -       | Password hashing       |
+| **jsonwebtoken** | -     | JWT authentication     |
 
 ### Architecture Approach
 
@@ -25,6 +28,8 @@
 - **Controller-Service pattern** for business logic separation
 - **Middleware-based** request validation and authentication
 - **Standardized API responses** with consistent `{ data, errors }` structure (see [CONTEXT.md — API Response Envelope](CONTEXT.md#api-response-envelope))
+- **Real-time push** via Socket.IO for SRP publications
+- **Time-zone agnostic** — all timestamps stored as UTC with timezone (`timestamptz`)
 
 ---
 
@@ -40,22 +45,35 @@
 
 ## Features
 
-<!-- Add features here as they are built. Use the format below: -->
-<!-- | [features/FEATURE.md](features/FEATURE.md) | Brief description | -->
+| # | Document | Purpose | Dependencies |
+|---|----------|---------|-------------|
+| 0 | [features/TIME_HANDLING.md](features/TIME_HANDLING.md) | UTC timestamptz convention for all date/time fields | None (foundation) |
+| 1 | [features/ADMIN_AUTH.md](features/ADMIN_AUTH.md) | Admin login (seeded), JWT auth middleware | TIME_HANDLING |
+| 2 | [features/SRP_MANAGEMENT.md](features/SRP_MANAGEMENT.md) | CRUD for official DA Suggested Retail Price records | TIME_HANDLING, ADMIN_AUTH |
+| 3 | [features/REALTIME_SRP.md](features/REALTIME_SRP.md) | Socket.IO push notifications for new SRP publications | SRP_MANAGEMENT |
+| 4 | [features/PRICE_HISTORY.md](features/PRICE_HISTORY.md) | Cascade logic, immutability, history view & filtering | SRP_MANAGEMENT |
 
-| Document | Purpose |
-| -------- | ------- |
-| _None yet_ | Features will be documented here as they are built. |
+> **Implementation order**: Follow the `#` column top-to-bottom. Each feature builds on its dependencies.
 
 ---
 
 ## API Endpoints Summary
 
-<!-- Maintain a quick-reference table of all endpoints as features are added. -->
+| Method | Path | Auth | Feature | Description |
+| ------ | ---- | ---- | ------- | ----------- |
+| GET  | `/health`         | —      | Core            | Health check |
+| POST | `/api/auth/login` | Public | ADMIN_AUTH      | Admin login, returns JWT |
+| GET  | `/api/auth/me`    | Bearer | ADMIN_AUTH      | Get current admin profile |
+| POST | `/api/srp`        | Bearer | SRP_MANAGEMENT  | Create a new SRP record (triggers cascade + broadcast) |
+| GET  | `/api/srp`        | Public | SRP_MANAGEMENT  | List SRP records (paginated, filterable) |
+| GET  | `/api/srp/active` | Public | SRP_MANAGEMENT  | Get the currently active SRP record |
+| GET  | `/api/srp/:id`    | Public | SRP_MANAGEMENT  | Get a single SRP record by ID |
 
-| Method | Path | Feature | Description |
-| ------ | ---- | ------- | ----------- |
-| GET | `/health` | Core | Health check |
+### WebSocket Events (Socket.IO)
+
+| Event | Direction | Payload | Description |
+|-------|-----------|---------|-------------|
+| `srp:new` | Server → Client | `SrpRecord` | Broadcast when a new SRP record is created |
 
 ---
 
