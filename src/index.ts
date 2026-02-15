@@ -1,13 +1,21 @@
 import 'dotenv/config';
+import http from 'http';
 import express from 'express';
 import cors from 'cors';
 import { logger } from './utils/logger';
 import { sendSuccess } from './utils/response';
+import { initializeSocket } from './socket';
 import authRoutes from './routes/auth.routes';
 import srpRoutes from './routes/srp.routes';
 
 const app = express();
+const server = http.createServer(app);
 const PORT = process.env.PORT || 3000;
+
+// ---------------------------------------------------------------------------
+// Socket.IO
+// ---------------------------------------------------------------------------
+initializeSocket(server);
 
 // ---------------------------------------------------------------------------
 // Middleware
@@ -31,7 +39,7 @@ app.use('/api/srp', srpRoutes);
 // ---------------------------------------------------------------------------
 // Start Server
 // ---------------------------------------------------------------------------
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   logger.info(`🐷 PigWeigh server running on port ${PORT}`);
 });
 
