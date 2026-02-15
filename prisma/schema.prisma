@@ -8,3 +8,32 @@ generator client {
 datasource db {
     provider = "postgresql"
 }
+
+// ---------------------------------------------------------------------------
+// Admin — seeded only, no self-registration
+// ---------------------------------------------------------------------------
+model Admin {
+    id         String      @id @default(cuid())
+    username   String      @unique
+    password   String // bcrypt hash
+    name       String // display name
+    createdAt  DateTime    @default(now()) @db.Timestamptz
+    updatedAt  DateTime    @updatedAt @db.Timestamptz
+    srpRecords SrpRecord[]
+}
+
+// ---------------------------------------------------------------------------
+// SRP Record — official DA Suggested Retail Price
+// ---------------------------------------------------------------------------
+model SrpRecord {
+    id          String    @id @default(cuid())
+    price       Decimal   @db.Decimal(10, 2) // PHP value, e.g., 230.00
+    reference   String // URL or text reference to DA publication
+    startDate   DateTime  @db.Timestamptz // Effectivity start date
+    endDate     DateTime? @db.Timestamptz // Effectivity end date (null = currently active)
+    isActive    Boolean   @default(true) // Managed by server cascade logic
+    createdById String
+    createdBy   Admin     @relation(fields: [createdById], references: [id])
+    createdAt   DateTime  @default(now()) @db.Timestamptz
+    updatedAt   DateTime  @updatedAt @db.Timestamptz
+}

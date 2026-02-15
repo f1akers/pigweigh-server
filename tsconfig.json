@@ -6,7 +6,6 @@
             "ES2022"
         ],
         "outDir": "./dist",
-        "rootDir": "./src",
         "strict": true,
         "esModuleInterop": true,
         "skipLibCheck": true,
@@ -16,7 +15,8 @@
         "ignoreDeprecations": "5.0"
     },
     "include": [
-        "src/**/*"
+        "src/**/*",
+        "prisma/**/*"
     ],
     "exclude": [
         "node_modules",
