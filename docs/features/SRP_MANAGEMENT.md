@@ -1,6 +1,6 @@
 # Feature: SRP Management
 
-> **Status**: Planned
+> **Status**: ✅ Implemented
 > **Depends on**: [TIME_HANDLING](TIME_HANDLING.md), [ADMIN_AUTH](ADMIN_AUTH.md)
 
 ---

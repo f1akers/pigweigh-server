@@ -1,6 +1,6 @@
 # Feature: Admin Authentication
 
-> **Status**: Planned
+> **Status**: ✅ Implemented
 > **Depends on**: [TIME_HANDLING](TIME_HANDLING.md)
 
 ---
