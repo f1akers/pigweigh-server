@@ -12,11 +12,11 @@
         "forceConsistentCasingInFileNames": true,
         "resolveJsonModule": true,
         "moduleResolution": "node",
-        "ignoreDeprecations": "5.0"
+        "ignoreDeprecations": "5.0",
+        "rootDir": "./src"
     },
     "include": [
-        "src/**/*",
-        "prisma/**/*"
+        "src/**/*"
     ],
     "exclude": [
         "node_modules",
